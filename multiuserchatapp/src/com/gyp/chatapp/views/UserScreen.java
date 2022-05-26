@@ -93,7 +93,7 @@ public class UserScreen {
 				String message="Welcome "+userid;
 				JOptionPane.showMessageDialog(frmLogin, message);
 				frmLogin.setVisible(false);
-				Dashboard dashboard=new Dashboard(message);
+				Dashboard dashboard=new Dashboard(userid);
 				
 			}
 			else

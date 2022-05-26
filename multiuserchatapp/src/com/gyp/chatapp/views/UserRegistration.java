@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,6 +19,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.gyp.chatapp.dao.UserDAO;
 import com.gyp.chatapp.dto.UserDTO;
+import com.gyp.chatapp.util.Validation;
 
 public class UserRegistration extends JFrame {
 
@@ -28,25 +30,6 @@ public class UserRegistration extends JFrame {
 	private JTextField phnoField;
 	private JTextField cityField;
 
-	/**
-	 * Launch the application.
-	 */
-//	public static void main(String[] args) {
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				try {
-//					UserRegistration frame = new UserRegistration();
-//					frame.setVisible(true);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		});
-//	}
-
-	/**
-	 * Create the frame.
-	 */
 	public UserRegistration() {
 		setVisible(true);
 		setTitle("REGISTER");
@@ -130,12 +113,24 @@ public class UserRegistration extends JFrame {
 			}
 		});
 		
-		JButton refresh = new JButton("\uD83D\uDE06");
+		JButton refresh = new JButton("Refresh");
 		refresh.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		refresh.setBackground(Color.WHITE);
 		refresh.setForeground(new Color(0, 128, 0));
-		refresh.setBounds(315, 393, 48, 30);
+		refresh.setBounds(276, 393, 87, 30);
 		contentPane.add(refresh);
+		
+		JLabel lblNewLabel = new JLabel("*");
+		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblNewLabel.setForeground(Color.RED);
+		lblNewLabel.setBounds(85, 122, 10, 14);
+		contentPane.add(lblNewLabel);
+		
+		JLabel lblNewLabel_1 = new JLabel("*");
+		lblNewLabel_1.setForeground(Color.RED);
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblNewLabel_1.setBounds(96, 180, 10, 14);
+		contentPane.add(lblNewLabel_1);
 		refresh.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				refresh();
@@ -152,15 +147,32 @@ public class UserRegistration extends JFrame {
 		String phno=phnoField.getText();
 		String city=cityField.getText();
 		final UserDAO userDAO=new UserDAO();
+		
+		//Validations
+		if(!Validation.isValidUserName(userid)) {
+			JOptionPane.showMessageDialog(this, "Username is a required Field");
+			return;
+		}
+		if(!Validation.isValidPassword(password)) {
+			JOptionPane.showMessageDialog(this, "Password must be atleast 8 charecters long");
+			return;
+		}
+		if(!Validation.isValidEmail(emial)) JOptionPane.showMessageDialog(this, "Invalid Email");
+		if(!Validation.isValidPhoneNo(phno)) JOptionPane.showMessageDialog(this, "Invalid Phone Number");
+		
+		//Converting new entry to a DTO object
 		final UserDTO userDTO=new UserDTO(userid, password);
 		userDTO.setCity(city);
 		userDTO.setEmail(emial);
 		userDTO.setPhno(phno);
+		
 		try {
 			boolean result=userDAO.add(userDTO);
 			if(result)
 			{
 				JOptionPane.showMessageDialog(this, "Succesful Registry");
+				this.setVisible(false);
+				UserScreen.main(null);
 				//System.out.println("record added");
 			}
 			else
@@ -168,10 +180,13 @@ public class UserRegistration extends JFrame {
 				JOptionPane.showMessageDialog(this, "Error Occured");
 				//System.out.println("Failure");
 			}
+		}catch(SQLIntegrityConstraintViolationException e) {
+			JOptionPane.showMessageDialog(this, "username taken");
 		} catch (ClassNotFoundException | SQLException e) {
 			System.out.println("DB Exception...");
 			e.printStackTrace();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
